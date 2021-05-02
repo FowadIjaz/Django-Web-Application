@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters'
 ]
 
 MIDDLEWARE = [
@@ -78,9 +79,17 @@ WSGI_APPLICATION = 'django_project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+        'ENGINE': 'sql_server.pyodbc',
+        'NAME': 'Media',
+        'USER': 'fomorian',
+        'PASSWORD': '456388',
+        'HOST': 'YOLO-PC\SQLEXPRESS',
+        'PORT': '',
+
+        'OPTIONS': {
+            'driver': 'ODBC Driver 17 for SQL Server',
+        },
+    },
 }
 
 

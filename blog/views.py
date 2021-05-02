@@ -1,64 +1,71 @@
 from django.shortcuts import render, get_object_or_404
-from .models import Post
+# No longer needed
+# from django.http import HttpResponse
+from .models import *
 # For creating class based views
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
+from .filters import PostFilter
 
-posts = [
-  {
-    'author': 'Fowad Ijaz',
-    'title': 'Blog post 1',
-    'content': 'first post content',
-    'date_posted': 'March 31, 2021'
-  },
-  {
-    'author': 'Fowad Ijaz',
-    'title': 'Blog post 2',
-    'content': 'Second post content',
-    'date_posted': 'April 1, 2021'
-  },  
-]
+# posts = [
+#   {
+#     'author': 'Fowad Ijaz',
+#     'title': 'Blog post 1',
+#     'content': 'first post content',
+#     'date_posted': 'March 31, 2021'
+#   },
+#   {
+#     'author': 'Fowad Ijaz',
+#     'title': 'Blog post 2',
+#     'content': 'Second post content',
+#     'date_posted': 'April 1, 2021'
+#   },  
+# ]
 
 
-def home(request):
-  context = {
-    'posts': Post.objects.all()
-  }
-  return render(request, 'blog/home.html', context)
+def filter_posts(request):
+  context = {}
+  
+  posts = Post.objects.all()
+  myFilter = PostFilter(request.GET, queryset = posts)
+
+  context['myFilter'] = myFilter  
+
+  return render(request, 'blog/filter.html', context=context)
 
 class PostListView(ListView):
   model = Post
   template_name = 'blog/home.html' # <app>/<model>_<viewtype>.html
   context_object_name = 'posts'
-  ordering = ['-date_posted']
-  paginate_by = 5
+  ordering = ['-id']
+  paginate_by = 10
 
 class UserPostListView(ListView):
   model = Post
   template_name = 'blog/user_posts.html' # <app>/<model>_<viewtype>.html
   context_object_name = 'posts'
-  paginate_by = 5
+  paginate_by = 10
 
   def get_queryset(self):
     user = get_object_or_404(User, username = self.kwargs.get('username'))
-    return Post.objects.filter(author=user).order_by('-date_posted')
+    return Post.objects.filter(author=user).order_by('-id')
 
 class PostDetailView(DetailView):
   model = Post
 
 class PostCreateView(LoginRequiredMixin, CreateView):
   model = Post
-  fields = ['title', 'content']
+  fields = ['name','medium','author_director_draw','genre','runtime','year_made','status','recommended_by','date_finished','synopsis','review','rating','recommend','times_watched']
 
   def form_valid(self, form):
     form.instance.author = self.request.user
     return super().form_valid(form)
 
-class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class PostUpdateView(LoginRequiredMixin, UpdateView):
   model = Post
-  fields = ['title', 'content']
+  fields = ['name','medium','author_director_draw','genre','runtime','year_made','status','recommended_by','date_finished','synopsis','review','rating','recommend','times_watched']
 
 # checks to make sure the user is logged in
   def form_valid(self, form):
@@ -76,6 +83,13 @@ class PostDeleteView(LoginRequiredMixin,UserPassesTestMixin, DeleteView):
   model = Post
   success_url = '/'
 
+
+class AnalyticsView(ListView):
+  model = Post
+  template_name = 'blog/analytics.html'
+  context_object_name = 'posts'
+  ordering = ['-id']
+  paginate_by = 10
 
 # checks to ensure the user is the one who wrote the post
   def test_func(self):
